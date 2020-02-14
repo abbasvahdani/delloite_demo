@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd">
+	<sub-flow name="WSC_Connectivity" doc:id="808dd559-7e23-4b52-8301-739222f71af6" >
+		<set-variable value="400" doc:name="Set Variable" doc:id="8a718721-7093-4f78-a606-eac284ea1a95" variableName="httpStatus" />
+		<ee:transform doc:name="Transform Message" doc:id="195a52b8-1726-483a-9319-4eecee97c321">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	error_message :  "There is connectivity issue to SOAP service"
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+	</sub-flow>
+	<sub-flow name="WSC_BadRequest" doc:id="795212e2-a5ba-41ca-bc07-2935ddb8af8f" >
+		<set-variable value="400" doc:name="Set Variable" doc:id="08b1d0ff-a460-46e4-a013-eec93a0968ea" variableName="httpStatus" />
+		<ee:transform doc:name="Transform Message" doc:id="456d5375-1e9d-410e-a7a5-6f6b3d4aa721">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+   error_message: "Bad request to SOAP service"	
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+	</sub-flow>
+
+</mule>

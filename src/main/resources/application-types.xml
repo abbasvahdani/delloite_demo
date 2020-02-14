@@ -1,0 +1,14 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<types:mule xmlns:types="http://www.mulesoft.org/schema/mule/types">
+  <types:catalog>
+    <types:type name="weatherResult" format="json">
+      <types:shape format="weave" example="examples/weatherResult.json"><![CDATA[%dw 2.0
+
+type weatherResult = {| WeatherResult: String |} {"example": "{\\\"WeatherResult\\\":\\\"This is result\\\"}"}
+
+]]></types:shape>
+    </types:type>
+  </types:catalog>
+  <types:enrichment select="#cfff6d53-8e26-4cc7-b295-15ecaecaf678"/>
+  <types:enrichment select="#c6c965f3-11f2-4498-95b5-ddd16316902e"/>
+</types:mule>

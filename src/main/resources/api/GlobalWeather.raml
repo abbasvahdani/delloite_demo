@@ -1,0 +1,73 @@
+#%RAML 1.0
+title: GlobalWeather
+description: A RESTFUL API for for consuming a SOAP contract
+types:
+  WeatherResult:
+    description: Result for GetWeather API looks like this
+    type: object
+    example: 
+     { 
+        "Location": "Melbourne",
+        "Time": "11 AM",
+        "Wind": "15 km per hour",
+         "Visibility": "10 km",
+        "SkyConditions": "sunny",
+        "Temperature": "18",
+        "DewPoint": "2 C",
+        "RelativeHumidity": "35",
+        "Status": "Normal"
+     }
+  CountryCityResult:
+    description: Results for GetCitiesByCountry looks like this
+    type: array
+    example:
+     [
+      {
+          "Country": "Australia",
+          "City": "Archerfield Aerodrome"
+      },
+      {
+          "Country": "Australia",
+          "City": "Amberley Aerodrome"
+      }
+    ]   
+/GetWeather:  
+      get:
+        queryParameters:
+          Country: string
+          City: string
+        responses:
+          200:
+            description: Wether forcast for a Country/City
+            body:
+              application/json:
+                type: 
+                  WeatherResult
+          401:
+            description: Unauthorized access
+          403:
+            description: Forbidden resource
+          204:
+            description: No content
+          500:
+            description: Internal error in server side    
+/GetCitiesByCountry:
+    get:
+      queryParameters:
+        Country: string
+      responses:
+        200:
+          description: Country/City query result
+          body:
+            application/json:
+              type: 
+                CountryCityResult
+        401:
+          description: Unauthorized access
+        403:
+          description: Forbidden resource
+        204:
+          description: No content
+        500:
+          description: Internal error in server side
+    

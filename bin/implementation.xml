@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:wsc="http://www.mulesoft.org/schema/mule/wsc"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/wsc http://www.mulesoft.org/schema/mule/wsc/current/mule-wsc.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<sub-flow name="GetWeatherFlow" doc:id="42c5f2bd-e330-4c30-bc17-66cca36a53b0">
+		<set-variable value="#[attributes.queryParams.City]" doc:name="setting city" doc:id="f7f1ade8-b77c-4e57-abf2-8e12a679d531" variableName="City"/>
+		<set-variable value="#[attributes.queryParams.Country]" doc:name="setting country" doc:id="be5d2c3a-a3ce-482e-9e0a-99b4e9c8e84d" variableName="Country"/>
+		<logger level="INFO" doc:name="Logger" doc:id="d38c5566-6ce7-467a-bbb7-ba66a4d7452d" message="SOAP service is called for City:  #[vars.City] and   Country: #[vars.Country]"/>
+		<ee:transform doc:name="Making SOAP request" doc:id="d6d3bce1-e7f7-44f7-befa-84a1a366cfbe" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/xml
+ns ns0 http://www.webserviceX.NET
+---
+{
+	ns0#GetWeather: {
+		ns0#CityName: vars.City,
+		ns0#CountryName: vars.Country
+	}
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<wsc:consume operation="GetWeather" doc:name="Calling soap service" doc:id="2ce9e61a-3ccb-4e07-ae45-e8aaab972384" config-ref="Web_Service_Consumer_Config"/>
+		
+		<ee:transform doc:name="Extracting STRING response from SOAP" doc:id="cfff6d53-8e26-4cc7-b295-15ecaecaf678" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+ns ns0 http://www.webserviceX.NET
+---
+{
+	OperationResult: payload.body.ns0#GetWeatherResponse default ""
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<ee:transform doc:name="Converting String to XML" doc:id="e9c68a34-af9d-4d2a-be9f-ff563ad29be1" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+//import java!demo::Utility
+output application/xml
+---
+read(java!demo::Utility::cleanXmlString(payload.OperationResult), "application/xml")
+]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<ee:transform doc:name="Final result in JSON format" doc:id="f72cc553-8e81-4fdf-ba00-261b3bc1ab10" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	Location : payload.NewDataSet.Location,
+	Time : payload.NewDataSet.Time,
+	Wind : payload.NewDataSet.Wind,
+	Visibility : payload.NewDataSet.Visibility,
+	SkyConditions: payload.NewDataSet.SkyConditions,
+	Temperature: payload.NewDataSet.Temperature,
+	DewPoint: payload.NewDataSet.DewPoint,
+	RelativeHumidity: payload.NewDataSet.RelativeHumidity,
+	Status: payload.NewDataSet.Status
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		
+	</sub-flow>
+
+    <sub-flow name="GetCitiesByCountryFlow" doc:id="bd176f54-229c-49a9-9d5a-a2b72fd3571a" >
+		<set-variable value="#[attributes.queryParams.Country]" doc:name="setting country" doc:id="9861e656-efd1-4853-9498-7db011b774d3" variableName="Country"/>
+		<logger level="INFO" doc:name="Logger" doc:id="ac0512fe-c976-4038-a208-768b3b6e1a43" message="SOAP service is called for Country: #[vars.Country]"/>
+		<ee:transform doc:name="Transform Message" doc:id="ac7fda00-d719-441b-a565-7e177010a62b" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/xml
+ns ns0 http://www.webserviceX.NET
+---
+{
+	ns0#GetCitiesByCountry: {
+		ns0#CountryName: vars.Australia
+	}
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<wsc:consume operation="GetCitiesByCountry" doc:name="Consume soap server GetCitiesByCountry" doc:id="15d6826b-f7b2-4f75-9574-5df218358cf5" config-ref="Web_Service_Consumer_Config"/>
+		<ee:transform doc:name="Transform Message" doc:id="e2515841-2283-4220-93d1-01647e1d35ed" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+ns ns0 http://www.webserviceX.NET
+---
+{
+	OperationResult: payload.body.ns0#GetCitiesByCountryResponse default ""
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<ee:transform doc:name="Transform Message" doc:id="ebfc1c31-4aa7-42bf-8935-b22264c8b53a" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/xml
+---
+read(java!demo::Utility::cleanXmlString(payload.OperationResult), "application/xml")]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<ee:transform doc:name="Transform Message" doc:id="46b38ab6-f361-4465-a13f-be82272347d4" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+(payload.NewDataSet.*Table map ((item,index) -> 
+		{
+			Country : item.Country,
+			City: item.City
+		}
+))
+]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</sub-flow>
+	
+</mule>

@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:munit="http://www.mulesoft.org/schema/mule/munit" xmlns:munit-tools="http://www.mulesoft.org/schema/mule/munit-tools"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xsi:schemaLocation="
+		http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+		http://www.mulesoft.org/schema/mule/munit http://www.mulesoft.org/schema/mule/munit/current/mule-munit.xsd
+		http://www.mulesoft.org/schema/mule/munit-tools  http://www.mulesoft.org/schema/mule/munit-tools/current/mule-munit-tools.xsd">
+	<munit:config name="implementation-test-suite.xml" />
+	<munit:test name="implementation-test-suite-GetCitiesByCountryFlowTest" doc:id="7b86f171-9219-43e7-9966-11824e084916" description="Test">
+		<munit:execution >
+			<flow-ref doc:name="Flow-ref to GetCitiesByCountryFlow" doc:id="a16219ed-3ff0-46af-b1b9-0ba3e0411af7" name="GetCitiesByCountryFlow"/>
+		</munit:execution>
+		<munit:validation>
+			<munit-tools:assert doc:name="Payload should not be NULL" doc:id="f303b749-0493-4c0c-8b30-77281435165b" />
+			<munit-tools:assert doc:name="HTTP status should be 200 (OK)" doc:id="fa92dadb-512f-4512-ba4a-25c70bca3075" >
+				<munit-tools:that ><![CDATA[#[import * from dw::test::Asserts 
+ ---
+attributes.additionalTransportData.statusCode must equalTo('200')]]]></munit-tools:that>
+			</munit-tools:assert>
+			<munit-tools:assert doc:name="This payload should be an ARRAY" doc:id="74132e37-f44a-4c8a-b424-29a0a8ed7836" />
+			<munit-tools:assert doc:name="Payload collection should not be EMPTY" doc:id="544d362e-f97b-421e-b834-2e161f09e7df" >
+				<munit-tools:that ><![CDATA[#[import * from dw::test::Asserts 
+ ---
+sizeOf(payload) must beGreaterThan(0)]]]></munit-tools:that>
+			</munit-tools:assert>
+			<munit-tools:assert doc:name="In the first element Country field should equal ro Australia" doc:id="ab1b9194-9473-48e6-83b2-0f012caa6a61" >
+				<munit-tools:that ><![CDATA[#[import * from dw::test::Asserts 
+ ---
+payload[0].Country must equalTo('Australia')]]]></munit-tools:that>
+			</munit-tools:assert>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="implementation-test-suite-GetWeatherFlowTest" doc:id="363373a9-bb0d-4712-b500-13997f9d4755" description="Test">
+		<munit:execution >
+			<flow-ref doc:name="Flow-ref to GetWeatherFlow" doc:id="21d92159-bcee-4fa8-93e0-df0f73dc9ccf" name="GetWeatherFlow"/>
+		</munit:execution>
+		<munit:validation>
+			<munit-tools:assert doc:name="Payload should not be NULL" doc:id="0f834276-9c29-442f-8466-756eec3cb015" />
+			<munit-tools:assert doc:name="HTTP status should be 200 (OK)" doc:id="e7b117e1-ad7f-4ec4-9aae-87b5fb8a1839" >
+				<munit-tools:that ><![CDATA[#[import * from dw::test::Asserts 
+ ---
+attributes.additionalTransportData.statusCode must equalTo('200')]]]></munit-tools:that>
+			</munit-tools:assert>
+			<munit-tools:assert doc:name="Payload should be an OBJECT" doc:id="c40a4f32-5c68-44a2-9131-2b3279db2700" >
+				<munit-tools:that ><![CDATA[#[import * from dw::test::Asserts 
+ ---
+payload must beObject()]]]></munit-tools:that>
+			</munit-tools:assert>
+			<munit-tools:assert doc:name="The Location field of the payload should be Melbourne" doc:id="52ba53f8-2d65-4099-a98f-50288c0709a6" >
+				<munit-tools:that ><![CDATA[#[import * from dw::test::Asserts 
+ ---
+payload.Location must equalTo('Melbourne')]]]></munit-tools:that>
+			</munit-tools:assert>
+		</munit:validation>
+	</munit:test>
+
+
+</mule>

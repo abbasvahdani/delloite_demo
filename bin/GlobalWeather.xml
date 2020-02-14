@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd 
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+    <flow name="GlobalWeather-main">
+        <http:listener config-ref="HTTP_Listener_config" path="/api/*">
+            <http:response statusCode="#[vars.httpStatus default 200]">
+                <http:headers>#[vars.outboundHeaders default {}]</http:headers>
+            </http:response>
+            <http:error-response statusCode="#[vars.httpStatus default 500]">
+                <http:body>#[payload]</http:body>
+                <http:headers>#[vars.outboundHeaders default {}]</http:headers>
+            </http:error-response>
+        </http:listener>
+        <apikit:router config-ref="GlobalWeather-config"/>
+        <error-handler>
+            <on-error-propagate type="APIKIT:BAD_REQUEST">
+				<set-variable value="400" doc:name="Set tatus 400" doc:id="6b449110-a1ab-4282-a486-e08ba177d8c1" variableName="httpStatus"/>
+				<ee:transform doc:name="Transform Message" doc:id="65223dcf-e052-48b5-929b-0db393a30c4c" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Bad request: " ++ error.description}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:NOT_FOUND">
+				<set-variable value="404" doc:name="Set status 404" doc:id="12246f21-af09-4fe5-8431-db72db9395c3" variableName="httpStatus"/>
+				<ee:transform doc:name="Transform Message" doc:id="063044cb-0205-435b-8d84-66dadddd6b90" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{message: "This operation not found :" ++ error.description}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:METHOD_NOT_ALLOWED">
+				<set-variable value="405" doc:name="Set status 405" doc:id="bf718f03-832c-493a-8737-0974c787513f" variableName="httpStatus"/>
+				<ee:transform doc:name="Transform Message" doc:id="2aa36bf8-9ea9-4e01-998a-9cacabf0496f" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{message: "This action is not allowed: " ++ error.description}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:NOT_ACCEPTABLE">
+				<set-variable value="406" doc:name="Set status 406" doc:id="5813f091-070f-4bcb-87da-95790f607e1d" variableName="httpStatus"/>
+				<ee:transform doc:name="Transform Message" doc:id="a6935fbc-ddb6-4499-b980-b5e27c48c415" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Not acceptable"}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:UNSUPPORTED_MEDIA_TYPE">
+				<set-variable value="415" doc:name="Set status 415" doc:id="831a45e6-11b1-4fce-a39a-47b1b097d7ba" variableName="httpStatus"/>
+				<ee:transform doc:name="Transform Message" doc:id="29268be5-cf24-42cf-844d-525bd2892f42" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	message: "Unsupported media type"
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:NOT_IMPLEMENTED">
+				<set-variable value="501" doc:name="Set status 501" doc:id="99ab1c94-1168-4edd-b325-b573395d0336" variableName="httpStatus"/>
+				<ee:transform doc:name="Transform Message" doc:id="5f6a9369-dfc3-4f8f-a725-58bb655fa467" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	message: "Not implemented"
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+            </on-error-propagate>
+        </error-handler>
+    </flow>
+    <flow name="GlobalWeather-console">
+        <http:listener config-ref="HTTP_Listener_config" path="/console/*">
+            <http:response statusCode="#[vars.httpStatus default 200]">
+                <http:headers>#[vars.outboundHeaders default {}]</http:headers>
+            </http:response>
+            <http:error-response statusCode="#[vars.httpStatus default 500]">
+                <http:body>#[payload]</http:body>
+                <http:headers>#[vars.outboundHeaders default {}]</http:headers>
+            </http:error-response>
+        </http:listener>
+        <apikit:console config-ref="GlobalWeather-config"/>
+        <error-handler>
+            <on-error-propagate type="APIKIT:NOT_FOUND">
+                <ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd" doc:id="8a482ae1-c08a-40d2-a770-b8bbc056d884">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Resource not found"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus"><![CDATA[404]]></ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+        </error-handler>
+    </flow>
+    <flow name="get:\GetCitiesByCountry:GlobalWeather-config">
+		<flow-ref doc:name="Flow Reference" doc:id="ea7b91e0-7170-4723-841f-bccc6983e04f" name="GetCitiesByCountryFlow"/>
+		<error-handler >
+			<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="c0629e2a-2202-4e91-861a-3a37ab6c4185" type="WSC:CONNECTIVITY">
+				<flow-ref doc:name="Handling SOAP connectivity issues" doc:id="672ae6ba-d979-4e70-9078-028c9e58c49b" name="WSC_Connectivity"/>
+			</on-error-continue>
+			<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="091c95cd-7fd7-439a-8acd-c31e41781736" type="WSC:BAD_REQUEST">
+				<flow-ref doc:name="Handling SOAP bad-requesr issues" doc:id="56638d54-eccd-4fa1-bbdc-c391db88d62d" name="WSC_BadRequest"/>
+			</on-error-continue>
+		</error-handler>
+    </flow>
+    <flow name="get:\GetWeather:GlobalWeather-config">
+		<flow-ref doc:name="Flow Reference" doc:id="4dd81795-cdda-4114-8076-d4b9fe5489ec" name="GetWeatherFlow"/>
+		<error-handler >
+			<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="686fe0bf-f441-41e4-bf53-b6a3ec8d5fe4" type="WSC:CONNECTIVITY">
+				<flow-ref doc:name="Handling SOAP connectivity issues" doc:id="d8ffba99-8cc1-485c-b23c-c40a0eaf4bdd" name="WSC_Connectivity"/>
+			</on-error-continue>
+			<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="6cee90bf-43c4-4ae5-92cd-01e0f8c6dac3" type="WSC:BAD_REQUEST">
+				<flow-ref doc:name="Handling SOAP bad-requesr issues" doc:id="7bd9e365-dc72-4959-9348-00f16fd6c53a" name="WSC_BadRequest"/>
+			</on-error-continue>
+		</error-handler>
+    </flow>
+</mule>
